@@ -23,3 +23,6 @@ TODO
         wykorzystywanych przez wątek proszę skorzystać z programu oceny efektywności przetwarzania NVIDIA
         Nsight Compute (lub NVIDIA Visual Profiler – starsza wersja oprogramowania CUDA)
     5. Napisać sprawozdanie
+
+**Link do sprawozdania:**
+https://docs.google.com/document/d/1QenbAFKOeuPfCbdnITtxZPFhRKgXexGmvBuDhFi3vUA/edit
