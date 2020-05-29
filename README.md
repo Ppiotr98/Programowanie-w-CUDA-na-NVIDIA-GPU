@@ -26,3 +26,6 @@ TODO
 
 **Link do sprawozdania:**
 https://docs.google.com/document/d/1QenbAFKOeuPfCbdnITtxZPFhRKgXexGmvBuDhFi3vUA/edit
+
+**Link do dokumentu z pomiarami:**
+https://docs.google.com/spreadsheets/d/1E0nMM_v_i6ml3umW_iR_QIGyi7LpoULKQxh34xT2E2E/edit#gid=0
