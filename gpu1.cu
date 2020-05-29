@@ -168,20 +168,8 @@ void matrixMulCUDA(float* C, float* A, float* B, int N)
     int tx = threadIdx.x;
     int ty = threadIdx.y;
 
-    // Index of the first sub-matrix of A processed by the block
-    int aBegin = N * BLOCK_SIZE * by;
-
-    // Index of the last sub-matrix of A processed by the block
-    int aEnd = aBegin + N - 1;
-
-    // Step size used to iterate through the sub-matrices of A
-    int aStep = BLOCK_SIZE;
-
-    // Index of the first sub-matrix of B processed by the block
-    int bBegin = BLOCK_SIZE * bx;
-
-    // Step size used to iterate through the sub-matrices of B
-    int bStep = BLOCK_SIZE * N;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Csub is used to store the element of the block sub-matrix
     // that is computed by the thread
@@ -189,13 +177,10 @@ void matrixMulCUDA(float* C, float* A, float* B, int N)
 
     for (int k = 0; k < N; k++) {
         // Accumulate results for a single element
-        Csub += a[row * N + k] * b[k * N + col];
+        Csub += A[row * N + k] * B[k * N + col];
     }
 
-    // Write the block sub-matrix to device memory;
-    // each thread writes one element
-    int c = N * BLOCK_SIZE * by + BLOCK_SIZE * bx;
-    C[c + N * ty + tx] = Csub;
+    C[row * N + col] = Csub;
 }
 
 int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dimsB)
@@ -288,11 +273,11 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     {
         if (block_size == 16)
         {
-            matrixMulCUDA<16> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
+            matrixMulCUDA<16> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x);
         }
         else
         {
-            matrixMulCUDA<32> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
+            matrixMulCUDA<32> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x);
         }
     }
 
@@ -394,7 +379,7 @@ int main(int argc, char** argv)
     int block_size = (deviceProp.major < 2) ? 16 : 32;
 
     dim3 dimsA(5 * 2 * block_size, 5 * 2 * block_size, 1);
-    dim3 dimsB(5 * 4 * block_size, 5 * 2 * block_size, 1);
+    dim3 dimsB(5 * 2 * block_size, 5 * 2 * block_size, 1);
     cmdLineDimUpdate(argc, argv, dimsA, dimsB);
 
     int matrix_result = matrixMultiply(argc, argv, block_size, dimsA, dimsB);
