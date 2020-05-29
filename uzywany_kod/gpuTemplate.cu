@@ -183,6 +183,8 @@ void matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
     // Step size used to iterate through the sub-matrices of B
     int bStep = BLOCK_SIZE * wB;
 
+    printf("\nbx %d by %d tx %d ty %d aBegin %d aEnd %d aStep %d bBegin %d bStep %d wA %d wB %d\n", bx, by, tx, ty, aBegin, aEnd, aStep, bBegin, bStep, wA, wB);
+
     // Csub is used to store the element of the block sub-matrix
     // that is computed by the thread
     float Csub = 0;
