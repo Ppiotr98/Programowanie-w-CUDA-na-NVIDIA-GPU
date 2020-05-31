@@ -1,4 +1,23 @@
 Dokumentacja 
-Po wykonaniu zadania proszę dostarczyć przez email z TEMATEM: 2P_NR_INDEKSU1_NR_INDEKSU2 sprawozdane zawierające :  dane autorów (imiona i  nazwiska, numery indeksu)  i data oddania   nazwa przedmiotu i nazwa projektu,  opis wykorzystywanej karty graficznej (typ, CC – możliwości obliczeniowe, liczba SM i rdzeni, innych jednostek obliczeniowych, ograniczenia posiadanego przez kartę CC)   szczegółowy opis zakresu zrealizowanego zadania (przeprowadzone analizy realizowanego zadania)  kluczowe fragmenty kodów kerneli z wyjaśnieniami dotyczącymi znaczenia instrukcji, określenie i uzasadnienie jakości występującego w kodzie dostępu do pamięci, opis sposobu określania konfiguracji uruchomienia.  rysunki z opisem określające: o miejsce dostępu i kolejność dostępu do danych realizowane przez poszczególne wątki, bloki i  o wyznaczane przez wątki i bloki wartości wyników,  wzory zastosowane do obliczeń wszystkich prezentowanych miar efektywności przetwarzania wraz z wyjaśnieniem znaczenia tych miar,  wymagane  wyniki jakości przetwarzania dla poszczególnych zbadanych instancji proszę przedstawić w postaci tabelarycznej (najlepiej jedna tabela w orientacja portrait), tabele (i wykresy) należy ponumerować i podpisać w sposób nie budzący wątpliwości co do zawartości,   wnioski z wykonanych eksperymentów z uzasadnieniem (przy pomocy takich pojęć jak CGMA, zajętość multiprocesora, łączenie dostępów, lokalność dostępu do danych, synchronizacja wątków, ilość pracy wątków) obserwowanych wartości (czytelne odwołanie do omawianej wielkości i jej wartości  - jakiego uruchomienia - system, parametry, wersja kodu – dotyczą).  
+Po wykonaniu zadania proszę dostarczyć przez email z TEMATEM: 2P_NR_INDEKSU1_NR_INDEKSU2 
+sprawozdane zawierające :  dane autorów (imiona i  nazwiska, numery indeksu)  
+i data oddania   nazwa przedmiotu i nazwa projektu,  
+opis wykorzystywanej karty graficznej 
+(typ, CC – możliwości obliczeniowe, liczba SM i rdzeni, innych jednostek obliczeniowych, ograniczenia posiadanego przez kartę CC)   
+szczegółowy opis zakresu zrealizowanego zadania (przeprowadzone analizy realizowanego zadania)  
+kluczowe fragmenty kodów kerneli z wyjaśnieniami dotyczącymi znaczenia instrukcji, 
+określenie i uzasadnienie jakości występującego w kodzie dostępu do pamięci, 
+opis sposobu określania konfiguracji uruchomienia.  
+rysunki z opisem określające: 
+o miejsce dostępu i kolejność dostępu do danych realizowane przez poszczególne wątki, bloki i  
+o wyznaczane przez wątki i bloki wartości wyników,  
+wzory zastosowane do obliczeń wszystkich prezentowanych miar efektywności przetwarzania wraz z wyjaśnieniem znaczenia tych miar,  
+wymagane  
+wyniki jakości przetwarzania dla poszczególnych zbadanych instancji proszę przedstawić w postaci tabelarycznej 
+(najlepiej jedna tabela w orientacja portrait), 
+tabele (i wykresy) należy ponumerować i podpisać w sposób nie budzący wątpliwości co do zawartości,   wnioski z wykonanych eksperymentów z uzasadnieniem 
+(przy pomocy takich pojęć jak CGMA, zajętość multiprocesora, łączenie dostępów, lokalność dostępu do danych, synchronizacja wątków, ilość pracy wątków) 
+obserwowanych wartości 
+(czytelne odwołanie do omawianej wielkości i jej wartości  - jakiego uruchomienia - system, parametry, wersja kodu – dotyczą).  
  Do przesłanej wersji elektronicznej sprawozdania proszę dołączyć pliki źródłowe kernela. 
  
