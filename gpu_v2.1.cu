@@ -421,23 +421,12 @@ int main(int argc, char** argv)
     }
 
     // Use a larger block size for Fermi and above
-    int block_size = (deviceProp.major < 2) ? 16 : 32;
-    if (argc > 5) {
-        block_size = atoi(argv[5]);
-    }
+    // int block_size = (deviceProp.major < 2) ? 16 : 32;
+    int block_size = 16;
 
     // Default matrix size 320, 320
     dim3 dimsA(5 * 2 * block_size, 5 * 2 * block_size, 1);
     dim3 dimsB(5 * 2 * block_size, 5 * 2 * block_size, 1);
-
-    // Custom matrix size
-    if (argc > 4)
-    {
-        dimsA.x = atoi(argv[1]);
-        dimsA.y = atoi(argv[2]);
-        dimsB.x = atoi(argv[3]);
-        dimsB.y = atoi(argv[4]);
-    }
 
 
     if (dimsA.x != dimsB.y)
