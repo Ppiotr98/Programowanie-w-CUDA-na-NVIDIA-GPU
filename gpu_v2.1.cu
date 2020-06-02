@@ -25,13 +25,6 @@
   * Piscataway, NJ: IEEE Press, 2008, pp. Art. 31:1-11.
   */
 
-// SOME DEFINE
-
-#define BLOCK_SIZE = 16
-#define A_X = 3072
-#define A_Y = 3072
-#define B_X = 3072
-#define B_Y = 3072
 
 // System includes
 #include <stdio.h>
@@ -108,6 +101,12 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
             Csub += As[ty][k] * Bs[k][tx];
         }
 
+        // Synchronize to make sure that the preceding
+        // computation is done before loading two new
+        // sub-matrices of A and B in the next iteration
+
+        __syncthreads();
+
         // Load the matrices from device memory
         // to shared memory; each thread loads
         // one element of each matrix
@@ -115,10 +114,6 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
         as = A[a + wA * ty + tx];
         bs = B[b + wB * ty + tx];
 
-        // Synchronize to make sure that the preceding
-        // computation is done before loading two new
-        // sub-matrices of A and B in the next iteration
-        __syncthreads();
     }
 
     // Write the block sub-matrix to device memory;
