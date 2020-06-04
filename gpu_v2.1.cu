@@ -101,18 +101,16 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
             Csub += As[ty][k] * Bs[k][tx];
         }
 
-        // Synchronize to make sure that the preceding
-        // computation is done before loading two new
-        // sub-matrices of A and B in the next iteration
-
-        __syncthreads();
-
         // Load the matrices from device memory
         // to shared memory; each thread loads
         // one element of each matrix
 
         as = A[a + wA * ty + tx];
         bs = B[b + wB * ty + tx];
+
+        // Synchronize 
+
+        __syncthreads();
 
     }
 
