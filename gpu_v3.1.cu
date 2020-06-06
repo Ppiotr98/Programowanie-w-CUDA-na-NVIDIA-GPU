@@ -101,7 +101,6 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
         for (int k = 0; k < BLOCK_SIZE; ++k)
         {
             Csub += As2[ty][k] * Bs2[k][tx];
-            //Csub += currentA[ty][k] * currentB[k][tx];
         }
 
         // Load the matrices from device memory
