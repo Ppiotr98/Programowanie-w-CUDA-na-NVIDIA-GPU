@@ -46,7 +46,7 @@
 template <int BLOCK_SIZE> __global__ void
 matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
 {
-    
+
     // Block index
     int bx = blockIdx.x;
     int by = blockIdx.y;
@@ -74,20 +74,35 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
     // that is computed by the thread
     float Csub = 0;
 
+    // Declaration of the shared memory arrays
+    __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+
+    __shared__ float As2[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ float Bs2[BLOCK_SIZE][BLOCK_SIZE];
+
+    As[ty][tx] = A[aBegin + wA * ty + tx];
+    Bs[ty][tx] = B[bBegin + wB * ty + tx];
+
     // Loop over all the sub-matrices of A and B
     // required to compute the block sub-matrix
-    for (int a = aBegin, b = bBegin;
-        a <= aEnd;
-        a += aStep, b += bStep)
+    for (int a = aBegin, b = bBegin; a <= aEnd; a += aStep, b += bStep)
     {
+        As2[ty][tx] = As[ty][tx];
+        Bs2[ty][tx] = Bs[ty][tx];
+     
+        __syncthreads();
 
-        // Declaration of the shared memory array As used to
-        // store the sub-matrix of A
-        __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
+        // Multiply the two matrices together;
+        // each thread computes one element
+        // of the block sub-matrix
 
-        // Declaration of the shared memory array Bs used to
-        // store the sub-matrix of B
-        __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+#pragma unroll
+        for (int k = 0; k < BLOCK_SIZE; ++k)
+        {
+            Csub += As2[ty][k] * Bs2[k][tx];
+            //Csub += currentA[ty][k] * currentB[k][tx];
+        }
 
         // Load the matrices from device memory
         // to shared memory; each thread loads
@@ -95,22 +110,10 @@ matrixMulCUDA(float* C, float* A, float* B, int wA, int wB)
         As[ty][tx] = A[a + wA * ty + tx];
         Bs[ty][tx] = B[b + wB * ty + tx];
 
-        // Synchronize to make sure the matrices are loaded
-        __syncthreads();
-
-        // Multiply the two matrices together;
-        // each thread computes one element
-        // of the block sub-matrix
-#pragma unroll
-
-        for (int k = 0; k < BLOCK_SIZE; ++k)
-        {
-            Csub += As[ty][k] * Bs[k][tx];
-        }
-
         // Synchronize to make sure that the preceding
         // computation is done before loading two new
         // sub-matrices of A and B in the next iteration
+        // Uncomment if using assignment and not pointers
         __syncthreads();
     }
 
@@ -134,12 +137,25 @@ void constantInit(float* data, int size, float val)
 int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dimsB)
 {
     // Allocate host memory for matrices A and B
+    cudaError_t error;
     unsigned int size_A = dimsA.x * dimsA.y;
     unsigned int mem_size_A = sizeof(float) * size_A;
-    float* h_A = (float*)malloc(mem_size_A);
+    float* h_A;
+    error = cudaMallocHost(&h_A, mem_size_A);
+    if (error != cudaSuccess)
+    {
+        printf("cudaMallocHost h_A returned error code %d, line(%d)\n", error, __LINE__);
+        exit(EXIT_FAILURE);
+    }
     unsigned int size_B = dimsB.x * dimsB.y;
     unsigned int mem_size_B = sizeof(float) * size_B;
-    float* h_B = (float*)malloc(mem_size_B);
+    float* h_B;
+    error = cudaMallocHost(&h_B, mem_size_B);
+    if (error != cudaSuccess)
+    {
+        printf("cudaMallocHost h_B returned error code %d, line(%d)\n", error, __LINE__);
+        exit(EXIT_FAILURE);
+    }
 
     // Initialize host memory
     const float valB = 0.01f;
@@ -152,15 +168,19 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     // Allocate host matrix C
     dim3 dimsC(dimsB.x, dimsA.y, 1);
     unsigned int mem_size_C = dimsC.x * dimsC.y * sizeof(float);
-    float* h_C = (float*)malloc(mem_size_C);
+    float* h_C;
+    error = cudaMallocHost(&h_C, mem_size_C);
+    if (error != cudaSuccess)
+    {
+        printf("cudaMallocHost h_C returned error code %d, line(%d)\n", error, __LINE__);
+        exit(EXIT_FAILURE);
+    }
 
     if (h_C == NULL)
     {
         fprintf(stderr, "Failed to allocate host matrix C!\n");
         exit(EXIT_FAILURE);
     }
-
-    cudaError_t error;
 
     error = cudaMalloc((void**)&d_A, mem_size_A);
 
@@ -208,8 +228,6 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     // Setup execution parameters
     dim3 threads(block_size, block_size);
     dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
-    // dim3 grid(dimsB.x (640) / threads.x (32), dimsA.y (320) / threads.y (32));
-    // dim3 grid(20, 10)
 
     // Create and start timer
     printf("Computing result using CUDA Kernel...\n");
@@ -217,7 +235,7 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     // Performs warmup operation using matrixMul CUDA kernel
     if (block_size == 16)
     {
-        matrixMulCUDA<16> <<< grid, threads >>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
+        matrixMulCUDA<16> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
     }
     else if (block_size == 32)
     {
@@ -226,6 +244,7 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     else
     {
         matrixMulCUDA<8> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
+
     }
 
     printf("done\n");
@@ -267,15 +286,16 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     {
         if (block_size == 16)
         {
-            matrixMulCUDA<16> <<< grid, threads >>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
+            matrixMulCUDA<16> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
         }
         else if (block_size == 32)
         {
-            matrixMulCUDA<32> <<< grid, threads >>> (d_C, d_A, d_B, dimsA.x, dimsB.x);
+            matrixMulCUDA<32> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
         }
         else
         {
             matrixMulCUDA<8> << < grid, threads >> > (d_C, d_A, d_B, dimsA.x, dimsB.x);
+
         }
     }
 
@@ -341,9 +361,9 @@ int matrixMultiply(int argc, char** argv, int block_size, dim3& dimsA, dim3& dim
     printf("%s\n", correct ? "OK" : "FAIL");
 
     // Clean up memory
-    free(h_A);
-    free(h_B);
-    free(h_C);
+    cudaFreeHost(h_A);
+    cudaFreeHost(h_B);
+    cudaFreeHost(h_C);
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
@@ -399,13 +419,15 @@ int main(int argc, char** argv)
         printf("GPU Device %d: \"%s\" with compute capability %d.%d\n\n", devID, deviceProp.name, deviceProp.major, deviceProp.minor);
     }
 
+   
     // Use a larger block size for Fermi and above
-    int block_size = (deviceProp.major < 2) ? 16 : 32;
-    int block_size = 16;
+    //int block_size = (deviceProp.major < 2) ? 16 : 32;
+    block_size = 8;
 
     // Default matrix size 320, 320
-    dim3 dimsA(5 * 2 * block_size, 5 * 2 * block_size, 1);
-    dim3 dimsB(5 * 2 * block_size, 5 * 2 * block_size, 1);
+    dim3 dimsA(3072, 3072, 1);
+    dim3 dimsB(3072, 3072, 1);
+
 
     if (dimsA.x != dimsB.y)
     {
